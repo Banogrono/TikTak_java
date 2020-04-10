@@ -1,0 +1,182 @@
+package com.company;
+
+import java.util.Scanner;
+import java.math.*;
+
+public class Main {
+
+    static public boolean gameWonFlag = false;
+
+    final static Scanner scanner = new Scanner(System.in); // Do not change this line
+
+    public static void printGameTable(char[][] gameTable) {
+        System.out.println("---------");
+        for (int rows = 0; rows < gameTable.length; rows++) {
+            for (int columns = 0; columns < gameTable[rows].length; columns++) {
+
+                if (columns == 0)
+                    System.out.print("| ");
+
+                System.out.print(gameTable[rows][columns] + " ");
+
+                if (columns == 2)
+                    System.out.print("|");
+            }
+            System.out.println();
+        }
+        System.out.println("---------");
+    }
+
+    public static int countSymbols(char symbol, char[] arrayTicTac) {
+        int howManyTimes = 0;
+        for (int i = 0; i < arrayTicTac.length; i++) {
+            if (arrayTicTac[i] == symbol) {
+                howManyTimes++;
+            }
+        }
+        return howManyTimes;
+    }
+
+    public static boolean checkRow(char symbol, char[][] symbolArray) {
+
+        for (int row = 0; row < 3; row++) {
+            if ((symbol == symbolArray[row][0]) && (symbol == symbolArray[row][1]) && (symbol == symbolArray[row][2])) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public static boolean checkColumn(char symbol, char[][] symbolArray) {
+        for (int column = 0; column < 3; column++) {
+            if ((symbol == symbolArray[0][column]) && (symbol == symbolArray[1][column]) && (symbol == symbolArray[2][column])) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public static boolean checkDiagonal(char symbol, char[][] symbolArray) {
+
+        return ((symbol == symbolArray[0][0]) && (symbol == symbolArray[1][1]) && (symbol == symbolArray[2][2])) ||
+                ((symbol == symbolArray[2][0]) && (symbol == symbolArray[1][1]) && (symbol == symbolArray[0][2]));
+    }
+
+    public static boolean xWins(char[][] symbolArray) {
+        return checkColumn('X', symbolArray) || checkRow('X', symbolArray) || checkDiagonal('X', symbolArray);
+    }
+
+    public static boolean oWins(char[][] symbolArray) {
+        return (checkColumn('O', symbolArray) || checkRow('O', symbolArray) || checkDiagonal('O', symbolArray));
+    }
+
+    public static char[][] translateTableToMatrix(int tableLength, char[] tabToTranslate) {
+
+        int sqrtedTableLength = (int) Math.sqrt(tableLength);
+        char[][] newMatrix = new char[sqrtedTableLength][sqrtedTableLength];
+
+        int tabIterator = 0;
+
+        for (int i = 0; i < sqrtedTableLength; i++) {
+            for (int j = 0; j < sqrtedTableLength; j++) {
+
+                newMatrix[i][j] = tabToTranslate[tabIterator];
+                tabIterator++;
+            }
+        }
+        return newMatrix;
+    }
+
+    public static char[][] putSymbolInCoordinates(char symbol, int xPosition, int yPosition, char[][] gameTable) {
+        gameTable[xPosition][yPosition] = symbol;
+        return gameTable;
+    }
+
+    public static boolean isPositionFree(char[][] gameTable, int xPosition, int yPosition) {
+
+        if (gameTable[xPosition][yPosition] == 'X' || gameTable[xPosition][yPosition] == 'O') {
+            return false;
+        } else return true;
+    }
+
+    public static void checkForWin(char[] arrayTicTac, char[][] gameTable) {
+        int numberOfXs = countSymbols('X', arrayTicTac);
+        int numberOfOs = countSymbols('O', arrayTicTac);
+        int numberOf_s = countSymbols(' ', arrayTicTac);
+
+        boolean isXaWinner = xWins(gameTable);
+        boolean isOaWinner = oWins(gameTable);
+
+        // if ((isOaWinner && isXaWinner) || (Math.abs(numberOfXs - numberOfOs)) >= 2) System.out.println("Impossible");
+
+        if (isOaWinner) { System.out.println("O wins"); gameWonFlag = true;}
+        else if (isXaWinner) { System.out.println("X wins"); gameWonFlag = true;}
+       // else if (numberOf_s > 0 && !isOaWinner && !isXaWinner) System.out.println("Game not finished");
+       // else if (numberOf_s == 0 && !isOaWinner && !isXaWinner) System.out.println("Draw");
+    }
+
+    public static void main(String[] args) {
+
+        char[][] gameTable;
+        char[] ticTac = "         ".toCharArray();
+        gameTable = translateTableToMatrix(ticTac.length, ticTac);
+
+        int turn = 1;
+        char symbolInThisTurn;
+
+        do {
+            printGameTable(gameTable);
+
+            int x_MovePosition = 0, y_MovePosition = 0;
+            boolean positionIncorrectFlag = true;
+            while (positionIncorrectFlag) {
+
+                System.out.print("Enter the coordinates: ");
+                if (scanner.hasNextInt()) {
+                    y_MovePosition = scanner.nextInt() - 1;
+                } else {
+                    System.out.println("You should enter numbers!");
+                    scanner.nextLine();
+                    continue;
+                }
+
+                if (scanner.hasNextInt()) {
+                    x_MovePosition = scanner.nextInt() - 1;
+                    if (x_MovePosition == 2) x_MovePosition = 0; //my god why
+                    else if (x_MovePosition == 0) x_MovePosition = 2;
+                } else {
+                    System.out.println("You should enter numbers!");
+                    scanner.nextLine();
+                    continue;
+                }
+                System.out.println();
+
+                if (x_MovePosition > 2 || y_MovePosition > 2 || x_MovePosition < 0 || y_MovePosition < 0) {
+                    System.out.println("Coordinates should be from 1 to 3!");
+                    continue;
+                }
+
+                if (isPositionFree(gameTable, x_MovePosition, y_MovePosition)) {
+                    positionIncorrectFlag = false;
+                } else System.out.println("This cell is occupied! Choose another one!");
+            }
+
+
+            if (turn == 1) {
+                symbolInThisTurn = 'X';
+                turn--;
+            }
+            else {
+                symbolInThisTurn = 'O';
+                turn++;
+            }
+
+            gameTable = putSymbolInCoordinates(symbolInThisTurn, x_MovePosition, y_MovePosition, gameTable);
+
+            printGameTable(gameTable);
+            checkForWin(ticTac, gameTable);
+
+        }while (!gameWonFlag);
+
+    }
+}
